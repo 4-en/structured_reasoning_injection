@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reasoninginjection"
+version = "0.1.1"
+description = "A demo project for reasoning injection during Retrieval-Augmented Generation (RAG)."
+authors = [
+    { name="Ben Schumacher", email="ben.schumacher0@gmail.com" }
+]
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    # list runtime dependencies here, e.g. "requests>=2.0"
+    "torch",
+    "torchvision",
+    "transformers",
+    "requests>=2.32.0",
+    "llama_cpp_python>=0.3.16",
+    "sentence-transformers",
+    "python-dotenv>=1.1.1",
+    "google-genai>=1.51.0",
+    "matplotlib",
+    "deepeval",
+    "chromadb",
+    "langchain",
+    "langchain-text-splitters",
+    "langchain-community",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
