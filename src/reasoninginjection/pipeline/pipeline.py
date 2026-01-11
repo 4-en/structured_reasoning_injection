@@ -39,3 +39,15 @@ class Pipeline(ABC):
             The generated response message.
         """
         pass
+    
+    @abstractmethod
+    def __str__(self) -> str:
+        """
+        Return a string representation of the pipeline.
+
+        Returns
+        -------
+        str
+            The string representation of the pipeline.
+        """
+        pass

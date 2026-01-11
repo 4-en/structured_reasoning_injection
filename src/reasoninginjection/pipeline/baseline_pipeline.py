@@ -34,3 +34,6 @@ class BaselinePipeline(Pipeline):
         response_message = self.generator.generate(conversation, **kwargs)
 
         return response_message
+    
+    def __str__(self) -> str:
+        return "BaselinePipeline"

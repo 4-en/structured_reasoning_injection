@@ -34,3 +34,6 @@ class PIPipeline(Pipeline):
         response_message = self.generator.generate(conversation, context=context_str, **kwargs)
 
         return response_message
+    
+    def __str__(self) -> str:
+        return "PassageInjectionPipeline"
