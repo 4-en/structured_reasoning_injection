@@ -67,7 +67,8 @@ Preprocessing steps:
 - Organize the extracted information by putting related facts together.
 
 4. Plan the final response structure.
-- Reiterate the user's question(s) to ensure clarity.
+- Format as a first-person inner monologue.
+- Reiterate the user's question(s) and intent to ensure clarity.
 - Outline the main points to be covered in the response.
 - Reiterate the facts and insights one by one in a logical order.
 
