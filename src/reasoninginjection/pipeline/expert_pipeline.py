@@ -1,13 +1,11 @@
-
 from reasoninginjection.generator import BaseGenerator
 from reasoninginjection.core import Conversation, Message, Role
 
 from .pipeline import Pipeline
 
-class BaselinePipeline(Pipeline):
+class ExpertPipeline(Pipeline):
     """
-    A baseline pipeline that uses the generator without adding additional context.
-    Just returns the response from the underlying LLM.
+    A pipeline that uses an expert message to add context to the conversation.
     """
 
 
@@ -21,14 +19,17 @@ class BaselinePipeline(Pipeline):
             The conversation to generate a response for.
         contexts : list of str, optional
             Additional context strings to consider during generation.
-            These will be ignored in the baseline pipeline.
 
         Returns
         -------
         Message
             The generated response message.
         """
-
+        # Combine contexts into a single string if provided
+        if contexts:
+            expert_content = "\n".join(contexts)
+            expert_message = Message(role=Role.EXPERT, content=expert_content)
+            conversation.add_message(expert_message)
 
         # Use the generator to produce a response
         response_message = self.generator.generate(conversation, **kwargs)
