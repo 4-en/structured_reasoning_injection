@@ -37,3 +37,15 @@ class PIPipeline(Pipeline):
     
     def __str__(self) -> str:
         return "PassageInjectionPipeline"
+    
+    def get_description(self) -> str:
+        """
+        Return a description of the pipeline.
+
+        Returns
+        -------
+        str
+            The description of the pipeline.
+        """
+        return """Incorporates passage injection into the conversation to provide additional context before generating a response.
+The provided passages are added to the reasoning process of the LLM to enhance its responses."""

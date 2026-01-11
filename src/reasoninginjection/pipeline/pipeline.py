@@ -51,3 +51,14 @@ class Pipeline(ABC):
             The string representation of the pipeline.
         """
         pass
+    
+    def get_description(self) -> str:
+        """
+        Return a description of the pipeline.
+
+        Returns
+        -------
+        str
+            The description of the pipeline.
+        """
+        return str(self)

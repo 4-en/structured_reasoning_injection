@@ -37,3 +37,15 @@ class SRIPipeline(Pipeline):
     
     def __str__(self) -> str:
         return "StructuredReasoningInjectionPipeline"
+    
+    def get_description(self) -> str:
+        """
+        Return a description of the pipeline.
+
+        Returns
+        -------
+        str
+            The description of the pipeline.
+        """
+        return """Incorporates structured reasoning injection into the reasoning step to provide additional context before generating a response.
+The provided passages are preprocessed into a structured format to enhance the reasoning process of the LLM by creating more organized and less overwhelming context."""

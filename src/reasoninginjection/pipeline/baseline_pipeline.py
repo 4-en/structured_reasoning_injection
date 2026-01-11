@@ -37,3 +37,14 @@ class BaselinePipeline(Pipeline):
     
     def __str__(self) -> str:
         return "BaselinePipeline"
+    
+    def get_description(self) -> str:
+        """
+        Return a description of the pipeline.
+
+        Returns
+        -------
+        str
+            The description of the pipeline.
+        """
+        return """Directly uses the underlying LLM without adding any additional context or reasoning steps."""

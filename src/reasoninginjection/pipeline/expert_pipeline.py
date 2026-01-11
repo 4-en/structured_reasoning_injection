@@ -38,3 +38,14 @@ class ExpertPipeline(Pipeline):
     
     def __str__(self) -> str:
         return "ExpertPipeline"
+    
+    def get_description(self) -> str:
+        """
+        Return a description of the pipeline.
+
+        Returns
+        -------
+        str
+            The description of the pipeline.
+        """
+        return """Incorporates expert messages into the conversation to provide additional context before generating a response."""
