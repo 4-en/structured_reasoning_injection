@@ -541,6 +541,90 @@ class LowLevelLlamaCppGenerator(BaseGenerator):
 
             
         return ObjectResult(success=False, error_message="Failed to generate valid object after maximum attempts.")
+    
+    def generate_with_steps(self, conversation:Conversation, steps:list[str], **kwargs) -> Message:
+        """
+        Generate a response based on the conversation and intermediate steps.
+        
+        Guides the response to follow the format of:
+        # 1. <step 1><model response>
+        # 2. <step 2><model response>
+        ...
+        # n. <step n><final model response>
+
+        Parameters
+        ----------
+        conversation : Conversation
+            The conversation to generate a response for.
+        steps : list of str
+            The intermediate reasoning steps to include in the generation.
+
+        Returns
+        -------
+        Message
+            The generated response message.
+        """
+        
+        message_str = self.generate_input_string_qwen2_basic(conversation)
+        
+        response = None
+        content = ""
+        
+        # consider adding the steps as prefilled reasoning
+        # for now, rely on properly formatted system prompt by user
+        
+        
+        # initial reasoning until </think> tag
+        reasoning_response = self.model(
+            prompt=message_str,
+            max_tokens=self.config.llm_max_tokens_gen if self.config.llm_max_tokens_gen > 0 else None,
+            temperature=self.config.llm_temperature,
+            top_p=self.config.llm_top_p,
+            top_k=self.config.llm_top_k,
+            stop=["</think>"],
+            seed=kwargs.get("seed", None)
+        )
+        reasoning_content = reasoning_response["choices"][0]["text"]
+        if not reasoning_content.endswith("</think>"):
+            reasoning_content += "</think>\n"
+        content += reasoning_content
+        
+        
+        step_index = 0
+        while step_index < len(steps):
+            step = steps[step_index]
+            includes_new_line = "\n" in step
+            ends_with_new_line = content.endswith("\n")
+            if not includes_new_line:
+                step += "\n"
+            if not ends_with_new_line:
+                content += "\n"
+            content += f"# {step_index + 1}. {step}"
+            
+            stop = None
+            if step_index < len(steps) - 1:
+                stop = [f"# {step_index + 2}."]
+            
+            step_response = self.model(
+                prompt=message_str + content,
+                max_tokens=self.config.llm_max_tokens_gen if self.config.llm_max_tokens_gen > 0 else None,
+                temperature=self.config.llm_temperature,
+                top_p=self.config.llm_top_p,
+                top_k=self.config.llm_top_k,
+                seed=kwargs.get("seed", None),
+                stop=stop
+            )
+            step_content = step_response["choices"][0]["text"]
+            
+            # remove next step part if present
+            if stop is not None and step_content.endswith(stop[0]):
+                step_content = step_content[:-len(stop[0])]
+            content += step_content
+            step_index += 1
+            
+        logging.info("Response generated with steps.")
+        return self.convert_output_to_message(content, conversation)
+        
         
 
 
