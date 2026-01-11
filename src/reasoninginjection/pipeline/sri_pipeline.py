@@ -49,3 +49,28 @@ class SRIPipeline(Pipeline):
         """
         return """Incorporates structured reasoning injection into the reasoning step to provide additional context before generating a response.
 The provided passages are preprocessed into a structured format to enhance the reasoning process of the LLM by creating more organized and less overwhelming context."""
+
+
+"""
+Preprocessing steps:
+1. Analyze the user's prompt and core intends.
+- Identify the specific question(s) being asked.
+- Determine the key topics or subjects involved.
+- Identify any constraints or requirements specified by the user.
+
+2. Evaluate the provided passages for relevance.
+- For each passage, assess its relevance to the identified question(s) and topics.
+- Determine which passages contain information that directly addresses the user's core intends.
+
+3. Extract and combine relevant information.
+- From the relevant passages, extract key facts, data points, and insights.
+- Organize the extracted information by putting related facts together.
+
+4. Plan the final response structure.
+- Reiterate the user's question(s) to ensure clarity.
+- Outline the main points to be covered in the response.
+- Reiterate the facts and insights one by one in a logical order.
+
+Okay, the user...
+        
+"""
