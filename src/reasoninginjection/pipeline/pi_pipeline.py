@@ -27,8 +27,17 @@ class PIPipeline(Pipeline):
         Message
             The generated response message.
         """
-        # Combine contexts into a single string if provided
-        context_str = "\n".join(contexts) if contexts else None
+        
+        
+        conversation = conversation.copy()
+        
+        system_instruction = Message(role=Role.SYSTEM, content="You are a helpful assistant. Use the provided passages to create accurate and relevant responses.")
+        conversation.messages.insert(0, system_instruction)
+        
+        context_str = "Passages:\n"
+        for idx, context in enumerate(contexts):
+            context_str += f"[Passage {idx+1}]: {context}\n"
+        context_str += "\nI should use the above passages to help me answer the question.\n"
 
         # Use the generator to produce a response
         response_message = self.generator.generate(conversation, context=context_str, **kwargs)

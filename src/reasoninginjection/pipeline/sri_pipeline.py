@@ -27,13 +27,48 @@ class SRIPipeline(Pipeline):
         Message
             The generated response message.
         """
-        # Combine contexts into a single string if provided
-        context_str = "\n".join(contexts) if contexts else None
+        conversation = conversation.copy()
+        
+        
+        
+        # generate reasoning message with structured format
+        reasoning_content = self.generate_reasoning_message(conversation, contexts)
+        
+        system_instruction = Message(role=Role.SYSTEM, content="You are a helpful assistant. Think about the user's prompt and the relevant facts to form a well-structured response.")
+        conversation.messages.insert(0, system_instruction)
+
 
         # Use the generator to produce a response
-        response_message = self.generator.generate(conversation, context=context_str, **kwargs)
+        response_message = self.generator.generate(conversation, context=reasoning_content, **kwargs)
 
         return response_message
+    
+    def generate_reasoning_message(self, conversation: Conversation, contexts: list[str]) -> str:
+        """
+        Generate a structured reasoning message from the provided contexts.
+
+        Parameters
+        ----------
+        conversation : Conversation
+            The conversation to generate the reasoning message for.
+        contexts : list of str
+            Additional context strings to consider during generation.
+
+        Returns
+        -------
+        str
+            The structured reasoning message.
+        """
+        # Here we would implement the preprocessing steps to create the structured reasoning message.
+        # For simplicity, we'll just concatenate the contexts with some formatting.
+        
+        reasoning_content = "<REASONING CONTEXT>\n"
+        for idx, context in enumerate(contexts):
+            reasoning_content += f"[Passage {idx+1}]: {context}\n"
+        reasoning_content += "\n"  # Additional instructions or formatting can be added here.
+        reasoning_content += "</REASONING CONTEXT>\n"
+        
+        return reasoning_content
     
     def __str__(self) -> str:
         return "StructuredReasoningInjectionPipeline"

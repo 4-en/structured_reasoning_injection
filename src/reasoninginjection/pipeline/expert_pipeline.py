@@ -25,11 +25,22 @@ class ExpertPipeline(Pipeline):
         Message
             The generated response message.
         """
+        conversation = conversation.copy()
+        
+        # create system instruction message
+        system_instruction = Message(role=Role.SYSTEM, content="You are a helpful assistant. Use the provided expert context to create accurate and relevant responses. Don't refer to the expert itself. Treat the expert context as the absolute truth.")
+        conversation.messages.insert(0, system_instruction)
+        
         # Combine contexts into a single string if provided
         if contexts:
-            expert_content = "\n".join(contexts)
-            expert_message = Message(role=Role.EXPERT, content=expert_content)
-            conversation.add_message(expert_message)
+            expert_content = "<EXPERT CONTEXT>\n"
+            for idx, context in enumerate(contexts):
+                expert_content += f"[Context {idx+1}]: {context}\n"
+            expert_content += "</EXPERT CONTEXT>\n"
+            expert_message = Message(role=Role.USER, content=expert_content)
+            
+            # add before the last message
+            conversation.messages.insert(-1, expert_message)
 
         # Use the generator to produce a response
         response_message = self.generator.generate(conversation, **kwargs)

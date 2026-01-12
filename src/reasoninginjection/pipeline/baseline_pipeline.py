@@ -28,6 +28,11 @@ class BaselinePipeline(Pipeline):
         Message
             The generated response message.
         """
+        
+        conversation = conversation.copy()
+        
+        system_instruction = Message(role=Role.SYSTEM, content="You are a helpful assistant. Provide accurate and relevant responses based on the user's input.")
+        conversation.messages.insert(0, system_instruction)
 
 
         # Use the generator to produce a response
