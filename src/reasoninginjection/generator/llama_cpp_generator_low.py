@@ -1,10 +1,11 @@
 from pydantic import BaseModel
-from .base_generator import BaseGenerator, ObjectResult, GeneratorConfig
-from reasoninginjection.core import Conversation, Message, Role, MessagePart, ThoughtPart, TextPart
+from .base_generator import BaseGenerator, ObjectResult
+from reasoninginjection.core import Conversation, Message, Role, ThoughtPart, TextPart
 from llama_cpp import Llama
 from .llama_cpp_chat_completion_generator import LlamaCppRole
 import logging
 from transformers import AutoTokenizer
+from .config import Config
 
 
 # some llms for later
@@ -20,7 +21,7 @@ class LowLevelLlamaCppGenerator(BaseGenerator):
     """Generator for local models that use the Llama C++ framework with
     low-level API access for more control over the generation process."""
     
-    def __init__(self, config: GeneratorConfig = GeneratorConfig()):
+    def __init__(self, config: Config=None):
         """
         Initialize the Llama C++ generator.
 
@@ -32,6 +33,10 @@ class LowLevelLlamaCppGenerator(BaseGenerator):
             The Hugging Face repository name, by default None
             If none, the model is assumed to be a local model.
         """
+        super().__init__()
+        
+        if config is None:
+            config = Config()
         
         self.config = config
         
