@@ -97,6 +97,80 @@ class BaseGenerator(ABC):
         """
         raise NotImplementedError()
     
+    def generate_with_steps(self, conversation:Conversation, steps:list[str], **kwargs) -> Message:
+        """
+        Generate a response based on the conversation and intermediate steps.
+        
+        Guides the response to follow the format of:
+        # 1. <step 1><model response>
+        # 2. <step 2><model response>
+        ...
+        # n. <step n><final model response>
+
+        Parameters
+        ----------
+        conversation : Conversation
+            The conversation to generate a response for.
+        steps : list of str
+            The intermediate reasoning steps to include in the generation.
+
+        Returns
+        -------
+        Message
+            The generated response message.
+        """
+        
+        # by default, use the generate method
+        return self.generate(conversation, **kwargs)
+    
+    def parse_steps_from_message(self, message:Message, steps:list[str]=None) -> list[str]:
+        """
+        Parse the intermediate steps from a message.
+        
+        Parameters
+        ----------
+        message : Message
+            The message to parse the steps from.
+        steps : list of str, optional
+            The expected steps to parse. If None, parse all steps found.
+            If provided, check that the steps match the expected steps.
+            
+        Returns
+        -------
+        list of str
+            The parsed steps in order, without the headings.
+        """
+        
+        # split steps by using # n. as delimiter
+        content = message.message_text
+        split_steps = []
+        current_step = ""
+        lines = content.splitlines()
+        for line in lines:
+            stripped_line = line.strip()
+            if stripped_line.startswith("# "):
+                no_hash = stripped_line[2:]
+                one_num_found = False
+                while no_hash[0].isdigit():
+                    no_hash = no_hash[1:]
+                    one_num_found = True
+                if one_num_found and no_hash.startswith("."):
+                    # new step found
+                    if current_step:
+                        split_steps.append(current_step.strip())
+                    current_step = ""
+                    continue
+            current_step += line + "\n"
+        if current_step:
+            split_steps.append(current_step.strip())
+        
+        
+        # if expected steps are provided, check that they match
+        if steps is not None:
+            if len(split_steps) != len(steps):
+                raise ValueError(f"Expected {len(steps)} steps, but found {len(split_steps)} steps.")
+        return split_steps
+    
     def add_context_as_expert(self, conversation: Conversation, context: str) -> Conversation:
         """
         Add the context as a message from an expert to the conversation.
