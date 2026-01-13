@@ -87,7 +87,8 @@ class SEPipeline(Pipeline):
             "- Organize the extracted information by putting related facts together.\n\n"
             f"4. {steps[3]}\n"
             "- Identify and correct any mistakes made in the previous steps.\n\n"
-            "- Correct any instances where you ignored or contradicted relevant information from the passages.\n\n"
+            "- Correct any instances where you ignored or contradicted relevant information from the passages.\n"
+            "- If there are no mistakes, state that no corrections are needed.\n\n"
             f"5. {steps[4]}\n"
             "- Format as an all-encompassing expert summary.\n"
             "- Ensure clarity and coherence in presenting the information, organized into one or multiple sections as appropriate.\n"
@@ -120,6 +121,23 @@ class SEPipeline(Pipeline):
         reasoning_content += "\nNow, please preprocess these passages into an organized summary as per the instructions above."
         
         conversation.add_message(Message(role=Role.USER, content=reasoning_content))
+        
+        final_step = None
+        max_tries = 3
+        tries = 0
+        while final_step is None and tries < max_tries:
+            try:
+                tries += 1
+                output = self.generator.generate_with_steps(conversation, steps=steps)
+                
+                steps = self.generator.parse_steps_from_message(output, steps=steps)
+                
+                final_step = steps[-1]
+            except Exception as e:
+                print(f"Attempt {tries} to parse steps failed: {e}")
+                final_step = None
+        
+        return final_step or ""
     
     def __str__(self) -> str:
         return "StructuredExpertPipeline"

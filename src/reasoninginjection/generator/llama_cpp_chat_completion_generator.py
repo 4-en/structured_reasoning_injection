@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-from .base_generator import BaseGenerator, GeneratorConfig
+from .base_generator import BaseGenerator
+from .config import Config
 from reasoninginjection.core import Conversation, Message, Role, MessagePart, ThoughtPart, TextPart
 from llama_cpp import Llama, ChatCompletionRequestResponseFormat
 from enum import Enum
@@ -23,7 +24,7 @@ class LlamaCppRole(Enum):
 class LlamaCppChatCompletionGenerator(BaseGenerator):
     """Generator for local models that use the Llama C++ framework."""
     
-    def __init__(self, config: GeneratorConfig = GeneratorConfig()):
+    def __init__(self, config: Config = Config()):
         """
         Initialize the Llama C++ generator.
 
