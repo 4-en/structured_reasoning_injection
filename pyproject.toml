@@ -28,6 +28,7 @@ dependencies = [
     "langchain",
     "langchain-text-splitters",
     "langchain-community",
+    "faker",
 ]
 
 [tool.setuptools]

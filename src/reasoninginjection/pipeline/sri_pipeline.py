@@ -67,7 +67,7 @@ class SRIPipeline(Pipeline):
             "Evaluate the provided passages for relevance to the user's question.",
             "Extract and combine relevant information from the passages.",
             "Fix mistakes that were made in previous steps.",
-            "Plan the final response structure in a clear and organized manner."
+            "Plan the final response structure in a clear and organized manner. Include and repeat all facts needed."
         ]
         
         instructions_content = (
@@ -92,7 +92,7 @@ class SRIPipeline(Pipeline):
             "- Format as a first-person inner monologue.\n"
             "- First reiterate the user's question(s) and intent to ensure clarity.\n"
             "- Then outline the main points to be covered in the response.\n"
-            "- Finally, reiterate the facts and insights one by one in a logical order.\n\n"
+            "- Finally, reiterate the facts and insights one by one in a logical order. Repeat the contents of the passages. Don't refer to the passages itself. The text must include all relevant information without relying on any additional context.\n\n"
             "Format the structured reasoning message as follows:\n"
             f"# 1. {steps[0]}\n"
             "# <your analysis here>\n\n"
@@ -124,14 +124,18 @@ class SRIPipeline(Pipeline):
         final_step = None
         max_tries = 3
         tries = 0
+        
+        instruction_steps = [step for step in steps]
+        instruction_steps[-1] += "\nOkay, the user"
+        
         while final_step is None and tries < max_tries:
             try:
                 tries += 1
-                output = self.generator.generate_with_steps(conversation, steps=steps)
+                output = self.generator.generate_with_steps(conversation, steps=instruction_steps)
                 
-                steps = self.generator.parse_steps_from_message(output, steps=steps)
+                output_steps = self.generator.parse_steps_from_message(output, steps=instruction_steps)
                 
-                final_step = steps[-1]
+                final_step = output_steps[-1]
             except Exception as e:
                 print(f"Attempt {tries} to parse steps failed: {e}")
                 final_step = None

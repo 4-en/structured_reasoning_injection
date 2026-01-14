@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 from enum import Enum
 
-from reasoninginjection.pipeline import SEPipeline
+from reasoninginjection.pipeline import SEPipeline, SRIPipeline
 from reasoninginjection.core import Conversation, Message, Role
 from reasoninginjection.generator import LowLevelLlamaCppGenerator
 
@@ -26,7 +26,7 @@ def run_test():
 
     # Initialize Pipeline with Debug Generator
     generator = LowLevelLlamaCppGenerator()
-    pipeline = SEPipeline(generator)
+    pipeline = SRIPipeline(generator=generator)
 
     # Create Conversation
     conv = Conversation()
@@ -38,8 +38,8 @@ def run_test():
     print("\n" + "="*40)
     print(" FINAL OUTPUT ")
     print("="*40)
-    print(f"ACTUAL RESPONSE:   {response.content}")
-    print(f"EXPECTED ANSWER:   {expected}")
+    print(f"ACTUAL RESPONSE:\n{response.full_text}\n")
+    print(f"EXPECTED ANSWER:\n{expected}")
 
 if __name__ == "__main__":
     run_test()
