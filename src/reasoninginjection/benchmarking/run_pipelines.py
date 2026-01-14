@@ -91,4 +91,4 @@ if __name__ == "__main__":
     ]
 
     # Run evaluation
-    run_evaluation(dataset_path=dataset_file, pipelines=pipelines_to_run, max_entries=1)
+    run_evaluation(dataset_path=dataset_file, pipelines=pipelines_to_run, max_entries=100)
