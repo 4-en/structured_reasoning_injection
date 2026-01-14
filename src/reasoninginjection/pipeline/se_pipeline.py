@@ -130,11 +130,12 @@ class SEPipeline(Pipeline):
                 tries += 1
                 output = self.generator.generate_with_steps(conversation, steps=steps)
                 
-                steps = self.generator.parse_steps_from_message(output, steps=steps)
+                output_steps = self.generator.parse_steps_from_message(output, steps=steps)
                 
-                final_step = steps[-1]
+                final_step = output_steps[-1]
             except Exception as e:
                 print(f"Attempt {tries} to parse steps failed: {e}")
+                print(f"Output was: {output.message_text}")
                 final_step = None
         
         return final_step or ""

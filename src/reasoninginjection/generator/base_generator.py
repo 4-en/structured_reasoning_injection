@@ -157,7 +157,9 @@ class BaseGenerator(ABC):
                 if one_num_found and no_hash.startswith("."):
                     # new step found
                     if current_step:
-                        split_steps.append(current_step.strip())
+                        stripped_current_step = current_step.strip()
+                        if stripped_current_step and stripped_current_step != "":
+                            split_steps.append(stripped_current_step)
                     current_step = ""
                     continue
             current_step += line + "\n"
@@ -168,7 +170,7 @@ class BaseGenerator(ABC):
         # if expected steps are provided, check that they match
         if steps is not None:
             if len(split_steps) != len(steps):
-                raise ValueError(f"Expected {len(steps)} steps, but found {len(split_steps)} steps.")
+                raise ValueError(f"Expected {len(steps)} steps, but found {len(split_steps)} steps.\n\nSteps found:\n" + "\n#############\n".join(split_steps))
         return split_steps
     
     def add_context_as_expert(self, conversation: Conversation, context: str) -> Conversation:

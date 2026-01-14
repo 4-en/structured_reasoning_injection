@@ -11,18 +11,18 @@ print(dataset['train'][0])
 
 instruction = """
 You are provided with a natural language question and answer pair from the CLAP-NQ dataset.
-Your task is to generate a ficticious version of the answer and question that is unrelated to the original pair.
-Keep the general type of question the same, but change the content entirely. Make up facts and details as needed, but ensure that the new question and answer are both coherent and logically consistent.
-Then, provide up to five passages of context that would support the ficticious answer to the new question, each passage being at least three sentences long.
+Your task is to generate a different version of the answer and question that is unrelated to the original pair, changing entities, events and details.
+Keep the general type of question the same, but change the content entirely. Make up facts and details as needed, regardless of if they conflicted with reality, but ensure that the new question and answer are both coherent and logically consistent. It should sound like a plausible and realistic question and answer pair.
+Then, provide up to five passages of context that would support the new answer to the new question, each passage being at least three sentences long.
 
 Answer in the following JSON format:
 {
-  "new_answer": "<ficticious answer>",
-  "new_question": "<ficticious question>",
+  "new_answer": "<answer>",
+  "new_question": "<question>",
   "fake_contexts": [
       {
           "summary": "<short one-line summary of the passage>",
-          "passage": "<the full passage text supporting the ficticious answer>"
+          "passage": "<the full passage text supporting the new answer>"
       }
     ]
 }
@@ -68,6 +68,8 @@ from google.genai import types
 from pydantic import BaseModel
 from typing import List
 from argparse import ArgumentParser
+import random
+import time
 
 class FicticiousPassage(BaseModel):
     summary: str
@@ -146,70 +148,78 @@ try:
             prompt = f"QUESTION: {question}\nANSWER: {answer}\n"
             
             #print(f"Generating ficticious entry for index {idx}...")
-            response = client.models.generate_content(
-                model=model_id,
-                contents=[
-                    {
-                        "role": "user",
-                        "parts": [
-                            {
-                                "text": example_prompt
-                            }
-                        ]
-                    },
-                    {
-                        "role": "model",
-                        "parts": [
-                            {
-                                "text": example_response
-                            }
-                        ]
-                    },
-                    {
-                        "role": "user",
-                        "parts": [
-                            {
-                                "text": prompt
-                            }
-                        ]
-                    }
-                    
-                ],
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    response_schema=FicticiousEntry,
-                    temperature=1.0,
-                    system_instruction=instruction.strip()
+            try:
+                response = client.models.generate_content(
+                    model=model_id,
+                    contents=[
+                        {
+                            "role": "user",
+                            "parts": [
+                                {
+                                    "text": example_prompt
+                                }
+                            ]
+                        },
+                        {
+                            "role": "model",
+                            "parts": [
+                                {
+                                    "text": example_response
+                                }
+                            ]
+                        },
+                        {
+                            "role": "user",
+                            "parts": [
+                                {
+                                    "text": prompt
+                                }
+                            ]
+                        }
+                        
+                    ],
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                        response_schema=FicticiousEntry,
+                        temperature=0.9,
+                        system_instruction=instruction.strip(),
+                        seed=int(time.time()) + random.randint(0, 10000)
+                    )
                 )
-            )
-            
-            # Accumulate token usage and cost
-            usage = response.usage_metadata
-            total_output_tokens += usage.candidates_token_count or 0
-            total_input_tokens += usage.prompt_token_count or 0
-            total_output_tokens += usage.thoughts_token_count or 0
-            
-            current_cost = ((total_input_tokens / 1_000_000) * cost_per_1m_input_tokens) + \
-                           ((total_output_tokens / 1_000_000) * cost_per_1m_output_tokens)
-                           
-            print(f"Processed index {idx}. Total input tokens: {total_input_tokens}, Total output tokens: {total_output_tokens}, Estimated cost so far: ${current_cost:.6f}")
-            
-            entry = json.loads(response.text)
-            
-            # convert to ShortEntry
-            short_entry = ShortEntry(
-                q=entry['new_question'],
-                a=entry['new_answer'],
-                passages=[p['passage'] for p in entry['fake_contexts']]
-            )
-            
-            buffer.append(short_entry)
-            
-            if len(buffer) >= BUFFER_SIZE:
-                for buffered_entry in buffer:
-                    f_out.write(buffered_entry.model_dump_json() + "\n")
-                f_out.flush()
-                buffer = []
+                
+                # Accumulate token usage and cost
+                usage = response.usage_metadata
+                total_output_tokens += usage.candidates_token_count or 0
+                total_input_tokens += usage.prompt_token_count or 0
+                total_output_tokens += usage.thoughts_token_count or 0
+                
+                current_cost = ((total_input_tokens / 1_000_000) * cost_per_1m_input_tokens) + \
+                            ((total_output_tokens / 1_000_000) * cost_per_1m_output_tokens)
+                            
+                print(f"Processed index {idx}. Total input tokens: {total_input_tokens}, Total output tokens: {total_output_tokens}, Estimated cost so far: ${current_cost:.6f}")
+                
+                entry = json.loads(response.text)
+                
+                # convert to ShortEntry
+                short_entry = ShortEntry(
+                    q=entry['new_question'],
+                    a=entry['new_answer'],
+                    passages=[p['passage'] for p in entry['fake_contexts']]
+                )
+                
+                buffer.append(short_entry)
+                
+                if len(buffer) >= BUFFER_SIZE:
+                    for buffered_entry in buffer:
+                        f_out.write(buffered_entry.model_dump_json() + "\n")
+                    f_out.flush()
+                    buffer = []
+            except KeyboardInterrupt as e:
+                print("Generation interrupted by user.")
+                break
+            except Exception as e:
+                print(f"Error generating entry for index {idx}: {e}")
+                continue
         
         # Write any remaining entries in the buffer
         for buffered_entry in buffer:
