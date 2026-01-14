@@ -604,11 +604,11 @@ class LowLevelLlamaCppGenerator(BaseGenerator):
                 step += "\n"
             if not ends_with_new_line:
                 content += "\n"
-            content += f"# {step_index + 1}. {step}"
+            content += f"# [Step {step_index + 1}] {step}"
             
             stop = None
             if step_index < len(steps) - 1:
-                stop = [f"# {step_index + 2}."]
+                stop = [f"# [Step {step_index + 2}]"]
             
             step_response = self.model(
                 prompt=message_str + content,

@@ -74,36 +74,36 @@ class SRIPipeline(Pipeline):
             "You are provided with a user's prompt and several text passages of content. "
             "Your task is to preprocess these passages into a structured format that will help in generating a "
             "clear and concise response. Follow these steps:\n"
-            f"1. {steps[0]}\n"
+            f"# [Step 1] {steps[0]}\n"
             "- Identify the specific question(s) being asked.\n"
             "- Determine the key topics or subjects involved.\n"
             "- Identify any constraints or requirements specified by the user.\n\n"
-            f"2. {steps[1]}\n"
+            f"# [Step 2] {steps[1]}\n"
             "- For each passage, assess its relevance to the identified question(s) and topics.\n"
             "- Determine which passages contain information that directly addresses the user's core intends.\n\n"
-            f"3. {steps[2]}\n"
+            f"# [Step 3] {steps[2]}\n"
             "- From the relevant passages, extract key facts, data points, and insights.\n"
             "- Organize the extracted information by putting related facts together.\n\n"
-            f"4. {steps[3]}\n"
+            f"# [Step 4] {steps[3]}\n"
             "- Identify and correct any mistakes made in the previous steps.\n\n"
             "- Correct any instances where you ignored or contradicted relevant information from the passages.\n"
             f"- If there are no mistakes, state that no corrections are needed.\n\n"
-            f"5. {steps[4]}\n"
+            f"# [Step 5] {steps[4]}\n"
             "- Format as a first-person inner monologue.\n"
             "- First reiterate the user's question(s) and intent to ensure clarity.\n"
             "- Then outline the main points to be covered in the response.\n"
             "- Finally, reiterate the facts and insights one by one in a logical order. Repeat the contents of the passages. Don't refer to the passages itself. The text must include all relevant information without relying on any additional context.\n\n"
             "Format the structured reasoning message as follows:\n"
-            f"# 1. {steps[0]}\n"
-            "# <your analysis here>\n\n"
-            f"# 2. {steps[1]}\n"
-            "# <your evaluation here>\n\n"
-            f"# 3. {steps[2]}\n"
-            "# <your extracted information here>\n\n"
-            f"# 4. {steps[3]}\n"
-            "# <your corrections here>\n\n"
-            f"# 5. {steps[4]}\n"
-            "# <your planned response structure here>\n\n"
+            f"# [Step 1] {steps[0]}\n"
+            "<your analysis here>\n\n"
+            f"# [Step 2] {steps[1]}\n"
+            "<your evaluation here>\n\n"
+            f"# [Step 3] {steps[2]}\n"
+            "<your extracted information here>\n\n"
+            f"# [Step 4] {steps[3]}\n"
+            "<your corrections here>\n\n"
+            f"# [Step 5] {steps[4]}\n"
+            "<your planned response structure here>\n\n"
             "Now, using the passages provided, create the structured reasoning message."
         )
         
@@ -157,28 +157,3 @@ class SRIPipeline(Pipeline):
         return """Incorporates structured reasoning injection into the reasoning step to provide additional context before generating a response.
 The provided passages are preprocessed into a structured format to enhance the reasoning process of the LLM by creating more organized and less overwhelming context."""
 
-
-"""
-Preprocessing steps:
-1. Analyze the user's prompt and core intends.
-- Identify the specific question(s) being asked.
-- Determine the key topics or subjects involved.
-- Identify any constraints or requirements specified by the user.
-
-2. Evaluate the provided passages for relevance.
-- For each passage, assess its relevance to the identified question(s) and topics.
-- Determine which passages contain information that directly addresses the user's core intends.
-
-3. Extract and combine relevant information.
-- From the relevant passages, extract key facts, data points, and insights.
-- Organize the extracted information by putting related facts together.
-
-4. Plan the final response structure.
-- Format as a first-person inner monologue.
-- Reiterate the user's question(s) and intent to ensure clarity.
-- Outline the main points to be covered in the response.
-- Reiterate the facts and insights one by one in a logical order.
-
-Okay, the user...
-        
-"""
