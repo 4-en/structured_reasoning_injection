@@ -9,6 +9,7 @@ import json
 from tqdm import tqdm
 import time
 from reasoninginjection.core import Conversation, Message, Role
+from argparse import ArgumentParser
 
 def run_evaluation(dataset_path: str, pipelines: list[Pipeline], output_dir: str = "results", max_entries: int = None):
     """
@@ -100,20 +101,39 @@ def run_evaluation(dataset_path: str, pipelines: list[Pipeline], output_dir: str
 
     print(f"\nAll pipelines finished. Results stored in '{output_dir}/'")
     
-if __name__ == "__main__":
+def main(args:list[str]=None):
+    
     # Define dataset path
     dataset_file = "datasets/ficticious_nq_dataset_dev.jsonl"
+    max_entries = 100  # Set to None to process all entries
+    
+    generator = LowLevelLlamaCppGenerator()
+    
+    
+    pipeline_map = {
+        "baseline": BaselinePipeline,
+        "expert": ExpertPipeline,
+        "se": SEPipeline,
+        "pi": PIPipeline,
+        "sri": SRIPipeline
+    }
+    
+    parser = ArgumentParser(description="Run reasoning injection pipelines on a dataset.")
+    parser.add_argument("--dataset", type=str, default=dataset_file, help="Path to the dataset file.")
+    parser.add_argument("--max_entries", type=int, default=max_entries, help="Maximum number of entries to process.")
+    parser.add_argument("--pipelines", type=str, nargs='+', choices=pipeline_map.keys(), default=list(pipeline_map.keys()), help="List of pipelines to run.")
+    
+    args = parser.parse_args(args=args)
     
     generator = LowLevelLlamaCppGenerator()
     
     # Define pipelines to evaluate
     pipelines_to_run = [
-        BaselinePipeline(generator=generator),
-        ExpertPipeline(generator=generator),
-        SEPipeline(generator=generator),
-        PIPipeline(generator=generator),
-        SRIPipeline(generator=generator)
+        pipeline_map[name](generator=generator) for name in args.pipelines
     ]
 
     # Run evaluation
-    run_evaluation(dataset_path=dataset_file, pipelines=pipelines_to_run, max_entries=100)
+    run_evaluation(dataset_path=args.dataset, pipelines=pipelines_to_run, max_entries=args.max_entries)
+    
+if __name__ == "__main__":
+    main()

@@ -281,7 +281,7 @@ class Evaluator:
         
         
             
-def main():
+def main(args:list[str]=None):
     OUTPUT_DIR = "evaluation_results"
     INPUT_DIR = "results/run_0"  # directory containing result files to evaluate
 
@@ -293,7 +293,7 @@ def main():
     parser.add_argument("--start_index", type=int, default=-1)
     parser.add_argument("--num_cases", type=int, default=-1)
 
-    args = parser.parse_args()
+    args = parser.parse_args(args=args)
 
     TEST_MODEL = GeminiModel(model=args.model_id, api_key=args.api_key, temperature=0.6)
     
