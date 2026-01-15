@@ -261,6 +261,21 @@ class Evaluator:
             import shutil
             shutil.copy(input_metadata_file, os.path.join(final_output_dir, "metadata.json"))
             
+        # add human readable summary of results
+        summary_file = os.path.join(final_output_dir, "summary.txt")
+        with open(summary_file, 'w', encoding='utf-8') as f_summary:
+            f_summary.write("Evaluation Summary\n")
+            f_summary.write("==================\n\n")
+            for model in output_data.models:
+                f_summary.write(f"Model: {model.model_name}\n")
+                f_summary.write("Average Scores:\n")
+                for metric_name, avg_score in model.score_averages.items():
+                    f_summary.write(f"  {metric_name}: {avg_score:.4f}\n")
+                f_summary.write("Thresholded Average Scores (threshold = {:.2f}):\n".format(self.threshold))
+                for metric_name, thresh_avg in model.score_thresholded_averages.items():
+                    f_summary.write(f"  {metric_name}: {thresh_avg:.4f}\n")
+                f_summary.write("\n")
+            
         print(f"Results saved to {output_file}.")
         
         
