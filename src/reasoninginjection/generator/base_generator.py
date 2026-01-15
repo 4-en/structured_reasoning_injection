@@ -2,6 +2,7 @@ from reasoninginjection.core import Conversation, Message, Role, MessagePart, Th
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pydantic import BaseModel
+from .config import Config
     
     
 @dataclass
@@ -123,6 +124,17 @@ class BaseGenerator(ABC):
         # by default, use the generate method
         return self.generate(conversation, **kwargs)
     
+    def get_config(self) -> Config:
+        """
+        Get the configuration of the generator.
+        
+        Returns
+        -------
+        Config
+            The configuration of the generator.
+        """
+        return Config()
+    
     def parse_steps_from_message(self, message:Message, steps:list[str]=None) -> list[str]:
         """
         Parse the intermediate steps from a message.
@@ -148,13 +160,13 @@ class BaseGenerator(ABC):
         lines = content.splitlines()
         for line in lines:
             stripped_line = line.strip()
-            if stripped_line.startswith("# "):
-                no_hash = stripped_line[2:]
+            if stripped_line.startswith("# [Step "):
+                no_hash = stripped_line[8:]  # remove "# [Step "
                 one_num_found = False
                 while no_hash[0].isdigit():
                     no_hash = no_hash[1:]
                     one_num_found = True
-                if one_num_found and no_hash.startswith("."):
+                if one_num_found and no_hash.startswith("]"):
                     # new step found
                     if current_step:
                         stripped_current_step = current_step.strip()

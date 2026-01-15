@@ -14,3 +14,4 @@ class Config:
     llm_temperature: float = 0.6
     llm_top_p: float = 0.95
     llm_top_k: int = 40
+    

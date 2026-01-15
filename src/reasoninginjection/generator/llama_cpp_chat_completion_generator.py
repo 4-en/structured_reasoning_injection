@@ -45,6 +45,9 @@ class LlamaCppChatCompletionGenerator(BaseGenerator):
         self.model: Llama = None
         
         self._setup_generator()
+        
+    def get_config(self):
+        return self.config
 
     def _get_model_params(self) -> dict:
         """

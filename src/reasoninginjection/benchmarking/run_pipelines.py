@@ -7,14 +7,29 @@ from reasoninginjection.generator import LowLevelLlamaCppGenerator, Config
 import os
 import json
 from tqdm import tqdm
+import time
 from reasoninginjection.core import Conversation, Message, Role
 
 def run_evaluation(dataset_path: str, pipelines: list[Pipeline], output_dir: str = "results", max_entries: int = None):
     """
     Main function to run datasets through pipelines and save results.
     """
+    # prepare output directory
+    # create directories using scheme run_n where n is the next available integer
+    all_directories = os.listdir(output_dir) if os.path.exists(output_dir) else []
+    filtered_dirs = [d for d in all_directories if d.startswith("run_")]
     
-    # 1. Initialize and Load Dataset
+    run_id = len(filtered_dirs)
+    
+    # double check to avoid overwriting
+    while os.path.exists(os.path.join(output_dir, f"run_{run_id}")):
+        run_id += 1
+    
+    output_dir = os.path.join(output_dir, f"run_{run_id}")
+    os.makedirs(output_dir, exist_ok=True)
+    
+    
+    # initialize and Load Dataset
     print(f"Loading dataset from {dataset_path}...")
     if not os.path.exists(dataset_path):
         print(f"Error: Dataset file '{dataset_path}' not found.")
@@ -27,13 +42,23 @@ def run_evaluation(dataset_path: str, pipelines: list[Pipeline], output_dir: str
     if max_entries is not None:
         loader.qa = loader.qa[:max_entries]
         print(f"Truncated dataset to {max_entries} entries for evaluation.")
+        
+    # add metadata file
+    metadata = {
+        "dataset": dataset_path,
+        "pipelines": [str(pipeline) for pipeline in pipelines],
+        "total_entries": len(loader),
+        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+        **pipelines[0].generator.get_config().__dict__
+    }
+    with open(os.path.join(output_dir, "metadata.json"), 'w', encoding='utf-8') as f_meta:
+        json.dump(metadata, f_meta, indent=4)
+        
 
-    # Create output directory
-    os.makedirs(output_dir, exist_ok=True)
     
     dataset_name = os.path.splitext(os.path.basename(dataset_path))[0]
 
-    # 2. Iterate over each pipeline
+    # Iterate over each pipeline
     for pipeline in pipelines:
         # Determine a name for the file (using class name)
         pipeline_name = str(pipeline)
@@ -77,7 +102,7 @@ def run_evaluation(dataset_path: str, pipelines: list[Pipeline], output_dir: str
     
 if __name__ == "__main__":
     # Define dataset path
-    dataset_file = "datasets/clapnq_short_entries_dev.jsonl"
+    dataset_file = "datasets/ficticious_nq_dataset_dev.jsonl"
     
     generator = LowLevelLlamaCppGenerator()
     

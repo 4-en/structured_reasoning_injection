@@ -68,6 +68,17 @@ class LowLevelLlamaCppGenerator(BaseGenerator):
 
         return base_params
     
+    def get_config(self) -> Config:
+        """
+        Get the configuration of the generator.
+        
+        Returns
+        -------
+        Config
+            The configuration of the generator.
+        """
+        return self.config
+    
     def _setup_generator(self):
         """
         Setup the model for generating responses.

@@ -4,7 +4,7 @@
 import random
 import time
 
-INPUT_FILE = "clapnq_short_entries.jsonl"
+INPUT_FILE = "ficticious_nq_dataset.jsonl"
 
 def split_data(input_file: str = INPUT_FILE, dev_ratio: float = 0.1, test_ratio: float = 0.5):
     with open(input_file, 'r') as f:
