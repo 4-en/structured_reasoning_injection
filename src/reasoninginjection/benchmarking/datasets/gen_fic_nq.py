@@ -10,21 +10,21 @@ print(f"dev: {len(dataset['validation'])}")
 print(dataset['train'][0])
 
 instruction = """
-You are provided with a natural language question and answer pair from the CLAP-NQ dataset.
+You are provided with a natural language question and answer pair from a natural question dataset.
 Your task is to generate a different version of the answer and question that is unrelated to the original pair, changing entities, events and details. Use the provided entities as inspiration if you need any to generate the new content.
 Keep the general type of question the same, but change the content entirely. Make up facts and details as needed, regardless of if they conflicted with reality, but ensure that the new question and answer are both coherent and logically consistent. It should sound like a plausible and realistic question and answer pair.
 Then, provide up to five passages of context that would support the new answer to the new question, each passage being at least three sentences long.
 
 Answer in the following JSON format:
 {
-  "new_answer": "<answer>",
   "new_question": "<question>",
+  "new_answer": "<answer>",
   "fake_contexts": [
-      {
-          "summary": "<short one-line summary of the passage>",
-          "passage": "<the full passage text supporting the new answer>"
-      }
-    ]
+    {
+      "summary": "<short one-line summary of the passage>",
+      "passage": "<the full passage text supporting the new answer>"
+    }
+  ]
 }
 """
 
@@ -36,28 +36,28 @@ ENTITIES: Kristin Richmond, South Joshuaport, 2014, Bahrain, Falkland Islands (M
 
 example_response = """
 {
-  "new_answer": "\"Whispers in the Nebulas\" was originally performed by the synth-pop duo The Chrome Velvets in 1984. Lead singer Marxon Jey wrote the track after a vivid dream about space travel, featuring a distinct theremin solo not found in later versions. The song was subsequently covered by various artists, including The Lunar Tides and the orchestral group Solar Flare.",
-  "new_question": "Who originally performed the ballad Whispers in the Nebulas?",
+  "new_question": "Who was the first artist to record the ballad \"Midnight in South Joshuaport\"?",
+  "new_answer": "\"Midnight in South Joshuaport\" was originally recorded by jazz vocalist Karen Howard for her 2014 album \"Blue Sands\". The track features backing vocals from the Falkland Islands Chamber Choir. Although pop star Kristin Richmond released a well-known cover version in 2018, Howard is the original performer.",
   "fake_contexts": [
     {
-      "summary": "Details regarding the release of The Chrome Velvets' album and the reception of the specific track.",
-      "passage": "The Chrome Velvets released their sophomore album, 'Neon Horizon', in late 1984 to critical acclaim across the indie music scene. The standout track, 'Whispers in the Nebulas,' quickly became an anthem for the burgeoning sci-fi subculture of the era, distinguishing the band from their contemporaries. Critics praised the duo's innovative use of analog synthesizers, noting that it was the first time such heavy electronic distortion had been successfully utilized in a slow-tempo ballad format."
+      "summary": "Details regarding the release of Karen Howard's 2014 album.",
+      "passage": "In early 2014, jazz sensation Karen Howard released her third studio album, titled \"Blue Sands\". The album's breakout hit was the melancholic ballad \"Midnight in South Joshuaport\", which critics praised for its haunting melody. This marked the first commercial recording of the song, which Howard wrote during a sabbatical in Bahrain."
     },
     {
-      "summary": "The origin story of the song's composition by lead singer Marxon Jey.",
-      "passage": "Marxon Jey, the lead vocalist of The Chrome Velvets, has often recounted the strange origin of the song in various music magazines. He claims the haunting melody came to him during a fever dream about floating through the Orion Nebula without a spacesuit, feeling both terrified and at peace. He immediately woke up and recorded a rough demo on a handheld cassette tape, which served as the exact blueprint for the final studio version released months later."
+      "summary": "Information about the recording location and collaborators.",
+      "passage": "The production of \"Midnight in South Joshuaport\" took place entirely within a converted lighthouse studio in the Falkland Islands (Malvinas). Howard insisted on using local talent for the atmospheric background harmonies. Consequently, the Falkland Islands Chamber Choir is credited on the original track, providing the distinct choral arrangement that defines the 2014 version."
     },
     {
-      "summary": "Information about the song's initial chart performance and eventual success.",
-      "passage": "While 'Whispers in the Nebulas' is now considered a quintessential 80s classic, it actually struggled initially upon its release. It debuted at number 45 on the Galactic Top 100 but slowly climbed the rankings as underground radio stations began playing the extended theremin solo version. By early 1985, the song had defied expectations to reach number one, where it stayed for three consecutive weeks before being displaced."
+      "summary": "Discussion of Kristin Richmond's later cover version.",
+      "passage": "Four years after the original release, pop icon Kristin Richmond recorded an uptempo synth-pop version of \"Midnight in South Joshuaport\". Richmond's version was produced for the summer blockbuster movie \"Bahrain Drift\" and achieved significant radio play. However, liner notes for the soundtrack explicitly credit Karen Howard as the original artist and composer."
     },
     {
-      "summary": "A history of cover versions performed by other fictitious bands.",
-      "passage": "Over the decades, 'Whispers in the Nebulas' has been covered by numerous artists seeking to capture its ethereal quality in different genres. The Lunar Tides released a grunge version in the 1990s that stripped away the synths in favor of heavy, distorted guitar riffs. Later, the pop orchestral group Solar Flare revitalized the track for a teen audience in the 2000s, though music historians and purists almost unanimously prefer The Chrome Velvets' original recording."
+      "summary": "Comparison of the chart performance between the two versions.",
+      "passage": "While Karen Howard's original jazz rendition peaked at number 40 on the Adult Contemporary charts, it garnered critical acclaim for its raw emotion. In contrast, Kristin Richmond's 2018 cover reached the top 10 on global pop charts due to its heavy electronic production. Despite the disparity in sales, music historians cite Howard's 2014 recording as the definitive version."
     },
     {
-      "summary": "Technical details regarding the specific instruments used in the original recording.",
-      "passage": "The production of the original track was notable for its inclusion of the theremin, an instrument rarely used in pop music at the time. The band's keyboardist, Sarah Vane, insisted on using the instrument to mimic the sound of 'solar wind' described in Jey's lyrics. This specific sound engineering choice gave the 1984 recording a unique sonic fingerprint that proved impossible to replicate in the digital remasters released twenty years later."
+      "summary": "Background on the fictional location of South Joshuaport.",
+      "passage": "The song's title refers to South Joshuaport, a fictional coastal town invented by Howard for her concept album. In interviews, Howard explained that South Joshuaport represents a state of emotional limbo rather than a physical place. This thematic depth is why the 2014 original recording remains a favorite among jazz purists over subsequent covers."
     }
   ]
 }
@@ -117,7 +117,7 @@ class ShortEntry(BaseModel):
     passages: List[str]
     
 
-OUTPUT_FILE = "ficticious_nq_dataset.jsonl"
+OUTPUT_FILE = "ficticious_nq_rev.jsonl"
 TARGET_SIZE = 10
 
 
