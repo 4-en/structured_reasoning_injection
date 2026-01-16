@@ -107,8 +107,6 @@ def main(args:list[str]=None):
     dataset_file = "datasets/ficticious_nq_dataset_dev.jsonl"
     max_entries = 100  # Set to None to process all entries
     
-    generator = LowLevelLlamaCppGenerator()
-    
     
     pipeline_map = {
         "baseline": BaselinePipeline,
