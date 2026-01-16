@@ -11,7 +11,7 @@ import time
 from reasoninginjection.core import Conversation, Message, Role
 from argparse import ArgumentParser
 
-def run_evaluation(dataset_path: str, pipelines: list[Pipeline], output_dir: str = "results", max_entries: int = None):
+def run_evaluation(dataset_path: str, pipelines: list[Pipeline], output_dir: str = "results", max_entries: int = None, noise: float = 1.0, notes: str = ""):
     """
     Main function to run datasets through pipelines and save results.
     """
@@ -37,6 +37,7 @@ def run_evaluation(dataset_path: str, pipelines: list[Pipeline], output_dir: str
         return
 
     loader = DatasetLoader()
+    loader.noise = noise
     loader.load_dataset(dataset_path)
     print(f"Dataset loaded: {len(loader)} entries.")
 
@@ -49,9 +50,14 @@ def run_evaluation(dataset_path: str, pipelines: list[Pipeline], output_dir: str
         "dataset": dataset_path,
         "pipelines": [str(pipeline) for pipeline in pipelines],
         "total_entries": len(loader),
+        "noise_level": noise,
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
         **pipelines[0].generator.get_config().__dict__
     }
+    
+    if notes:
+        metadata["notes"] = notes
+    
     with open(os.path.join(output_dir, "metadata.json"), 'w', encoding='utf-8') as f_meta:
         json.dump(metadata, f_meta, indent=4)
         
@@ -120,6 +126,8 @@ def main(args:list[str]=None):
     parser.add_argument("--dataset", type=str, default=dataset_file, help="Path to the dataset file.")
     parser.add_argument("--max_entries", type=int, default=max_entries, help="Maximum number of entries to process.")
     parser.add_argument("--pipelines", type=str, nargs='+', choices=pipeline_map.keys(), default=list(pipeline_map.keys()), help="List of pipelines to run.")
+    parser.add_argument("--noise", type=float, default=1.0, help="Noise level to apply to the dataset.")
+    parser.add_argument("--notes", type=str, default="", help="Additional notes to include in metadata.")
     
     args = parser.parse_args(args=args)
     
@@ -131,7 +139,7 @@ def main(args:list[str]=None):
     ]
 
     # Run evaluation
-    run_evaluation(dataset_path=args.dataset, pipelines=pipelines_to_run, max_entries=args.max_entries)
+    run_evaluation(dataset_path=args.dataset, pipelines=pipelines_to_run, max_entries=args.max_entries, noise=args.noise, notes=args.notes)
     
 if __name__ == "__main__":
     main()

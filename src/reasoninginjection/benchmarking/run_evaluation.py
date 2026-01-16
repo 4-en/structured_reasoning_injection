@@ -8,6 +8,8 @@ from pydantic import BaseModel
 from typing import List
 from tqdm import tqdm
 
+import json
+
 from argparse import ArgumentParser
 
 class ShortEntry(BaseModel):
@@ -114,7 +116,7 @@ class Evaluator:
                     expected_output=entry.a,
                     actual_output=record.actual_answer,
                     context=entry.passages,
-                    retrieval_context=record.passages
+                    retrieval_context=entry.passages # use this instead of record.passages, since we are not evaluating retrieval here
                 )
                 cases.append(case)
             test_cases[model_name] = cases
@@ -257,15 +259,36 @@ class Evaluator:
             
         # copy the metadata.json file from input_dir to final_output_dir
         input_metadata_file = os.path.join(self.input_dir, "metadata.json")
+        metadata = {}
         if os.path.exists(input_metadata_file):
-            import shutil
-            shutil.copy(input_metadata_file, os.path.join(final_output_dir, "metadata.json"))
+            with open(input_metadata_file, 'r', encoding='utf-8') as f_meta_in:
+                metadata = json.load(f_meta_in)
+                
+            output_metadata_file = os.path.join(final_output_dir, "metadata.json")
+            with open(output_metadata_file, 'w', encoding='utf-8') as f_meta_out:
+                json.dump(metadata, f_meta_out, indent=4)
             
         # add human readable summary of results
         summary_file = os.path.join(final_output_dir, "summary.txt")
         with open(summary_file, 'w', encoding='utf-8') as f_summary:
             f_summary.write("Evaluation Summary\n")
             f_summary.write("==================\n\n")
+            
+            metadata_included = False
+            if metadata and "dataset" in metadata:
+                f_summary.write(f"Dataset: {metadata['dataset']}\n")
+                metadata_included = True
+            if metadata and "noise_level" in metadata:
+                f_summary.write(f"Noise Level: {metadata['noise_level']}\n")
+                metadata_included = True
+            if metadata and "notes" in metadata:
+                f_summary.write(f"Notes: {metadata['notes']}\n")
+                metadata_included = True
+                
+            if metadata_included:
+                f_summary.write("==================\n\n")
+            
+            
             for model in output_data.models:
                 f_summary.write(f"Model: {model.model_name}\n")
                 f_summary.write("Average Scores:\n")
