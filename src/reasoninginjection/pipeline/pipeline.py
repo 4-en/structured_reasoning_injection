@@ -20,6 +20,7 @@ class Pipeline(ABC):
             The generator to use for generating responses.
         """
         self.generator = generator
+        self.enable_noise = True
 
     @abstractmethod
     def generate_response(self, conversation: Conversation, contexts: list[str] = None, **kwargs) -> Message:

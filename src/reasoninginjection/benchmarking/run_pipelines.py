@@ -86,9 +86,14 @@ def run_evaluation(dataset_path: str, pipelines: list[Pipeline], output_dir: str
 
                 # Generate Answer
                 try:
+                    passages = entry.passages
+                    if not pipeline.enable_noise:
+                        passages = loader.qa[i]['passage_ids']
+                        passages = [loader.passages[pid] for pid in passages if pid in loader.passages]
+                        
                     response = pipeline.generate_response(
                         conversation=conv, 
-                        contexts=entry.passages
+                        contexts=passages
                     )
                     actual_answer = response.message_text
                 except Exception as e:
