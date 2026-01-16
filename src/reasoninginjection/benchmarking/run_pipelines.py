@@ -118,19 +118,33 @@ def main(args:list[str]=None):
     dataset_file = "datasets/ficticious_nq_dataset_dev.jsonl"
     max_entries = 100  # Set to None to process all entries
     
+    def get_pi_no_noise_pipeline(generator):
+        pipeline = PIPipeline(generator=generator)
+        pipeline.enable_noise = False
+        pipeline.__str__ = lambda: "PI_NoNoise"
+        return pipeline
     
     pipeline_map = {
         "baseline": BaselinePipeline,
         "expert": ExpertPipeline,
         "se": SEPipeline,
         "pi": PIPipeline,
+        "pi_no_noise": get_pi_no_noise_pipeline,
         "sri": SRIPipeline
     }
+    
+    default_pipelines = [
+        "baseline",
+        "expert",
+        "se",
+        "pi",
+        "sri"
+    ]
     
     parser = ArgumentParser(description="Run reasoning injection pipelines on a dataset.")
     parser.add_argument("--dataset", type=str, default=dataset_file, help="Path to the dataset file.")
     parser.add_argument("--max_entries", type=int, default=max_entries, help="Maximum number of entries to process.")
-    parser.add_argument("--pipelines", type=str, nargs='+', choices=pipeline_map.keys(), default=list(pipeline_map.keys()), help="List of pipelines to run.")
+    parser.add_argument("--pipelines", type=str, nargs='+', choices=pipeline_map.keys(), default=default_pipelines, help="List of pipelines to run.")
     parser.add_argument("--noise", type=float, default=1.0, help="Noise level to apply to the dataset.")
     parser.add_argument("--notes", type=str, default="", help="Additional notes to include in metadata.")
     
