@@ -64,7 +64,7 @@ class SRIPipeline(Pipeline):
         
         steps = [
             "Analyze the user's prompt to understand the core question and intent.",
-            "Evaluate the provided passages for relevance to the user's question.",
+            "Evaluate the provided passages for relevance to the user's question and the general topic.",
             "Extract and combine relevant information from the passages.",
             "Fix mistakes that were made in previous steps.",
             "Plan the final response structure in a clear and organized manner. Include and repeat all facts needed."
@@ -80,7 +80,7 @@ class SRIPipeline(Pipeline):
             "- Identify any constraints or requirements specified by the user.\n\n"
             f"# [Step 2] {steps[1]}\n"
             "- For each passage, assess its relevance to the identified question(s) and topics.\n"
-            "- Determine which passages contain information that directly addresses the user's core intends.\n\n"
+            "- Determine which passages contain information that directly addresses the user's core intends or provides relevant background.\n\n"
             f"# [Step 3] {steps[2]}\n"
             "- From the relevant passages, extract key facts, data points, and insights.\n"
             "- Organize the extracted information by putting related facts together.\n\n"

@@ -63,7 +63,7 @@ class Evaluator:
         
     def load_test_cases(self):
         # 1. load and index all entries
-        qa_files = [ "datasets/clapnq_short_entries.jsonl", "datasets/ficticious_nq_dataset.jsonl" ]
+        qa_files = [ "datasets/clapnq_short_entries.jsonl", "datasets/ficticious_nq_dataset.jsonl", "datasets/ficticious_nq_rev.jsonl" ]
         
         # these are used to lookup expected answers and true passages (without noise)
         short_entries = {}
@@ -145,21 +145,21 @@ class Evaluator:
             end_index = start_index + num_cases
         
         metrics = {
-                "correctness": GEval(
-                    name="Correctness",
-                    model=self.eval_model,
-                    evaluation_params=[
-                        LLMTestCaseParams.INPUT,
-                        LLMTestCaseParams.ACTUAL_OUTPUT,
-                        LLMTestCaseParams.EXPECTED_OUTPUT],
-                    evaluation_steps=[
-                        "Check whether the facts in 'actual output' contradict any facts in 'expected output'",
-                        "Lightly penalize omissions of detail, focusing on the main idea",
-                        "Vague language or contradicting opinions are permissible"
-                    ],
-                ),
+                #"correctness": GEval(
+                #    name="Correctness",
+                #    model=self.eval_model,
+                #    evaluation_params=[
+                #        LLMTestCaseParams.INPUT,
+                #        LLMTestCaseParams.ACTUAL_OUTPUT,
+                #        LLMTestCaseParams.EXPECTED_OUTPUT],
+                #    evaluation_steps=[
+                #        "Check whether the facts in 'actual output' contradict any facts in 'expected output'",
+                #        "Lightly penalize omissions of detail, focusing on the main idea",
+                #        "Don't penalize for missing details from the 'expected output' that where not directly asked for or not crucial context for the answer",
+                #    ],
+                #),
                 #"answer_relevancy": AnswerRelevancyMetric(threshold=0.5, model=self.eval_model, async_mode=False),
-                #"faithfulness": FaithfulnessMetric(threshold=0.5, model=self.eval_model, async_mode=False),
+                "faithfulness": FaithfulnessMetric(threshold=0.5, model=self.eval_model, async_mode=False),
                 #"hallucination": HallucinationMetric(threshold=0.5, model=self.eval_model, async_mode=False)
             }
         
@@ -216,7 +216,8 @@ class Evaluator:
                     row = f"{model_name:<30} "
                     for metric_name in metrics.keys():
                         avg_score = scores[metric_name]["sum"] / scores[metric_name]["count"] if scores[metric_name]["count"] > 0 else 0
-                        row += f"{avg_score:<20.4f} "
+                        thresholded_avg = scores[metric_name]["thresholded_sum"] / scores[metric_name]["count"] if scores[metric_name]["count"] > 0 else 0
+                        row += f"{avg_score:<20.4f} ({thresholded_avg:<20.4f}) "
                     print(row)
                 print()
                 

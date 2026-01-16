@@ -131,6 +131,13 @@ def main(args:list[str]=None):
     
     args = parser.parse_args(args=args)
     
+    config = Config()
+    
+    config.hf_repo = "unsloth/Qwen3-1.7B-GGUF"
+    config.llm_top_k = 20
+    config.llm_temperature = 0.6
+    
+    
     generator = LowLevelLlamaCppGenerator()
     
     # Define pipelines to evaluate

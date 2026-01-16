@@ -2,8 +2,8 @@
 import os
 from argparse import ArgumentParser
 
-from .run_evaluation import main as run_evaluation
-from .run_pipelines import main as run_pipelines
+from reasoninginjection.benchmarking.run_pipelines import main as run_pipelines
+from reasoninginjection.benchmarking.run_evaluation import main as run_evaluation
 
 def main():
     parser = ArgumentParser(description="Run evaluation of pipelines on a dataset.")
@@ -11,6 +11,8 @@ def main():
     parser.add_argument("--dataset_path", type=str, default="datasets/ficticious_nq_rev.jsonl", help="Path to the dataset file.")
     parser.add_argument("--max_entries", type=int, default=20, help="Maximum number of entries to evaluate.")
     parser.add_argument("--pipelines", type=str, nargs='+', help="List of pipelines to evaluate.", default=["sri"])
+    parser.add_argument("--notes", type=str, default="Benchmarking latest SRI pipeline version on revised ficticious NQ dataset.", help="Additional notes to include in metadata.")
+    parser.add_argument("--noise", type=float, default=1.0, help="Noise level to apply to the dataset.")
     
     args = parser.parse_args()
     
@@ -30,3 +32,6 @@ def main():
         "--input_dir", latest_run_path,
         "--api_key", args.api_key
     ])
+    
+if __name__ == "__main__":
+    main()
