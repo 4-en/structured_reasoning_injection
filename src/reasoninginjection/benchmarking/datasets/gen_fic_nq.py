@@ -11,14 +11,17 @@ print(dataset['train'][0])
 
 instruction = """
 You are provided with a natural language question and answer pair from a natural question dataset.
-Your task is to generate a different version of the answer and question that is unrelated to the original pair, changing entities, events and details. Use the provided entities as inspiration if you need any to generate the new content.
-Keep the general type of question the same, but change the content entirely. Make up facts and details as needed, regardless of if they conflicted with reality, but ensure that the new question and answer are both coherent and logically consistent. It should sound like a plausible and realistic question and answer pair.
+Your task is to generate a different version of the answer and question that is unrelated to the original pair, changing entities, events and details. Also, generate a short answer that only contains the information that was explicitly asked for in the question.
 Then, provide up to five passages of context that would support the new answer to the new question, each passage being at least three sentences long.
+
+Use the provided entities as inspiration if you need any to generate the new content.
+Keep the general type of question the same, but change the content entirely. Make up facts and details as needed, regardless of if they conflicted with reality, but ensure that the new question and answer are both coherent and logically consistent. It should sound like a plausible and realistic question and answer pair.
 
 Answer in the following JSON format:
 {
   "new_question": "<question>",
   "new_answer": "<answer>",
+  "new_short_answer": "<short answer>",
   "fake_contexts": [
     {
       "summary": "<short one-line summary of the passage>",
@@ -36,28 +39,29 @@ ENTITIES: Kristin Richmond, South Joshuaport, 2014, Bahrain, Falkland Islands (M
 
 example_response = """
 {
-  "new_question": "Who was the first artist to record the ballad \"Midnight in South Joshuaport\"?",
-  "new_answer": "\"Midnight in South Joshuaport\" was originally recorded by jazz vocalist Karen Howard for her 2014 album \"Blue Sands\". The track features backing vocals from the Falkland Islands Chamber Choir. Although pop star Kristin Richmond released a well-known cover version in 2018, Howard is the original performer.",
+  "new_question": "Who originally recorded the song \"Midnight in South Joshuaport\"?",
+  "new_answer": "\"Midnight in South Joshuaport\" was first recorded by pop icon Kristin Richmond in 2014 as the lead single for her sophomore album. The track features distinctive harmony vocals from jazz singer Karen Howard. It has since been covered by various international acts, including a heavy metal rendition by a group from the Falkland Islands (Malvinas).",
+  "new_short_answer": "Kristin Richmond",
   "fake_contexts": [
     {
-      "summary": "Details regarding the release of Karen Howard's 2014 album.",
-      "passage": "In early 2014, jazz sensation Karen Howard released her third studio album, titled \"Blue Sands\". The album's breakout hit was the melancholic ballad \"Midnight in South Joshuaport\", which critics praised for its haunting melody. This marked the first commercial recording of the song, which Howard wrote during a sabbatical in Bahrain."
+      "summary": "Overview of Kristin Richmond's career milestones.",
+      "passage": "Kristin Richmond rose to moderate fame in 2010, but her career truly skyrocketed in 2014 with her second studio effort. That year, she released \"Midnight in South Joshuaport,\" a track that dominated the global charts for weeks. The song established her as a premier vocalist in the genre and remains her most streamed track to date."
     },
     {
-      "summary": "Information about the recording location and collaborators.",
-      "passage": "The production of \"Midnight in South Joshuaport\" took place entirely within a converted lighthouse studio in the Falkland Islands (Malvinas). Howard insisted on using local talent for the atmospheric background harmonies. Consequently, the Falkland Islands Chamber Choir is credited on the original track, providing the distinct choral arrangement that defines the 2014 version."
+      "summary": "Details regarding the production and personnel of the song.",
+      "passage": "The recording sessions for \"Midnight in South Joshuaport\" were tense but productive, taking place in a secluded studio near the coast. Producer James Vane insisted on bringing in Karen Howard to provide the high harmony parts, believing Richmond's voice needed a lighter counterpoint. Howard's contribution is often cited by musicologists as the key element that makes the chorus so memorable."
     },
     {
-      "summary": "Discussion of Kristin Richmond's later cover version.",
-      "passage": "Four years after the original release, pop icon Kristin Richmond recorded an uptempo synth-pop version of \"Midnight in South Joshuaport\". Richmond's version was produced for the summer blockbuster movie \"Bahrain Drift\" and achieved significant radio play. However, liner notes for the soundtrack explicitly credit Karen Howard as the original artist and composer."
+      "summary": "Information about international cover versions of the track.",
+      "passage": "While Kristin Richmond's version remains the definitive recording, others have attempted to put their spin on the classic. In 2016, a band from the Falkland Islands (Malvinas) released a metal cover that gained a cult following online. Another notable instrumental version was recorded by the Bahrain Symphony Orchestra, showcasing the melody's versatility."
     },
     {
-      "summary": "Comparison of the chart performance between the two versions.",
-      "passage": "While Karen Howard's original jazz rendition peaked at number 40 on the Adult Contemporary charts, it garnered critical acclaim for its raw emotion. In contrast, Kristin Richmond's 2018 cover reached the top 10 on global pop charts due to its heavy electronic production. Despite the disparity in sales, music historians cite Howard's 2014 recording as the definitive version."
+      "summary": "Karen Howard reflects on her contribution to the hit.",
+      "passage": "In a recent interview, Karen Howard reflected on her time working with Richmond in the studio. \"Singing on 'Midnight in South Joshuaport' was a highlight of my career, even though I wasn't the lead,\" she stated. She noted that despite being a background singer on the track, fans still ask her about those specific harmonies at her own jazz shows."
     },
     {
-      "summary": "Background on the fictional location of South Joshuaport.",
-      "passage": "The song's title refers to South Joshuaport, a fictional coastal town invented by Howard for her concept album. In interviews, Howard explained that South Joshuaport represents a state of emotional limbo rather than a physical place. This thematic depth is why the 2014 original recording remains a favorite among jazz purists over subsequent covers."
+      "summary": "The song's cultural impact on the city of South Joshuaport.",
+      "passage": "The song holds a special place in the hearts of residents of South Joshuaport, the fictionalized city that inspired the lyrics. When Kristin Richmond performed it live during her 2015 world tour, the crowd's reaction was deafening. Local radio stations in the region still play the original 2014 recording every hour on the anniversary of its release."
     }
   ]
 }
@@ -109,12 +113,21 @@ class FicticiousPassage(BaseModel):
 class FicticiousEntry(BaseModel):
     new_answer: str
     new_question: str
+    new_short_answer: str
     fake_contexts: List[FicticiousPassage]
     
 class ShortEntry(BaseModel):
     q: str
     a: str
     passages: List[str]
+    
+
+class FullEntry(BaseModel):
+    q: str
+    a: str
+    short_a: str
+    passages: List[FicticiousPassage]
+    
     
 
 OUTPUT_FILE = "ficticious_nq_rev.jsonl"
@@ -151,12 +164,14 @@ if start_index < 0:
         print(f"No existing output file found. Starting from index {start_index}.")
     
 output_file = parser.parse_args().output_file
+output_file_long = output_file.replace(".jsonl", "_full.jsonl")
 target_size = parser.parse_args().target_size
 model_id = parser.parse_args().model_id
 end_index = min(start_index + target_size, source_len) if target_size > 0 else source_len - 1
 
 BUFFER_SIZE = 100
 buffer = []
+long_buffer = []
 
 total_input_tokens = 0
 total_output_tokens = 0
@@ -164,99 +179,123 @@ cost_per_1m_input_tokens = 0.5
 cost_per_1m_output_tokens = 3.0
 
 try:
-    with open(output_file, "a") as f_out:
-        print(f"Generating ficticious entries from index {start_index} to {end_index} into file {output_file}...")
-        for idx in range(start_index, end_index):
-            item = source_data[idx]
-            question = item['input']
-            answer = "Not Provided"
+    print(f"Generating ficticious entries from index {start_index} to {end_index} into file {output_file}...")
+    for idx in range(start_index, end_index):
+        item = source_data[idx]
+        question = item['input']
+        answer = "Not Provided"
+        
+        if len(item['output']) > 0:
+            answer = item['output'][0]['answer']
+            if not answer or answer.strip() == "":
+                answer = "Not Provided"
+        
+        prompt = f"QUESTION: {question}\nANSWER: {answer}\nENTITIES: " + ", ".join(create_entities())
+        
+        #print(f"Generating ficticious entry for index {idx}...")
+        try:
+            response = client.models.generate_content(
+                model=model_id,
+                contents=[
+                    {
+                        "role": "user",
+                        "parts": [
+                            {
+                                "text": example_prompt
+                            }
+                        ]
+                    },
+                    {
+                        "role": "model",
+                        "parts": [
+                            {
+                                "text": example_response
+                            }
+                        ]
+                    },
+                    {
+                        "role": "user",
+                        "parts": [
+                            {
+                                "text": prompt
+                            }
+                        ]
+                    }
+                    
+                ],
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=FicticiousEntry,
+                    temperature=0.9,
+                    system_instruction=instruction.strip(),
+                    seed=int(time.time()) + random.randint(0, 10000)
+                )
+            )
             
-            if len(item['output']) > 0:
-                answer = item['output'][0]['answer']
-                if not answer or answer.strip() == "":
-                    answer = "Not Provided"
+            # Accumulate token usage and cost
+            usage = response.usage_metadata
+            total_output_tokens += usage.candidates_token_count or 0
+            total_input_tokens += usage.prompt_token_count or 0
+            total_output_tokens += usage.thoughts_token_count or 0
             
-            prompt = f"QUESTION: {question}\nANSWER: {answer}\nENTITIES: " + ", ".join(create_entities())
-            
-            #print(f"Generating ficticious entry for index {idx}...")
-            try:
-                response = client.models.generate_content(
-                    model=model_id,
-                    contents=[
-                        {
-                            "role": "user",
-                            "parts": [
-                                {
-                                    "text": example_prompt
-                                }
-                            ]
-                        },
-                        {
-                            "role": "model",
-                            "parts": [
-                                {
-                                    "text": example_response
-                                }
-                            ]
-                        },
-                        {
-                            "role": "user",
-                            "parts": [
-                                {
-                                    "text": prompt
-                                }
-                            ]
-                        }
+            current_cost = ((total_input_tokens / 1_000_000) * cost_per_1m_input_tokens) + \
+                        ((total_output_tokens / 1_000_000) * cost_per_1m_output_tokens)
                         
-                    ],
-                    config=types.GenerateContentConfig(
-                        response_mime_type="application/json",
-                        response_schema=FicticiousEntry,
-                        temperature=0.9,
-                        system_instruction=instruction.strip(),
-                        seed=int(time.time()) + random.randint(0, 10000)
-                    )
-                )
-                
-                # Accumulate token usage and cost
-                usage = response.usage_metadata
-                total_output_tokens += usage.candidates_token_count or 0
-                total_input_tokens += usage.prompt_token_count or 0
-                total_output_tokens += usage.thoughts_token_count or 0
-                
-                current_cost = ((total_input_tokens / 1_000_000) * cost_per_1m_input_tokens) + \
-                            ((total_output_tokens / 1_000_000) * cost_per_1m_output_tokens)
-                            
-                print(f"Processed index {idx}. Total input tokens: {total_input_tokens}, Total output tokens: {total_output_tokens}, Estimated cost so far: ${current_cost:.6f}")
-                
-                entry = json.loads(response.text)
-                
-                # convert to ShortEntry
-                short_entry = ShortEntry(
-                    q=entry['new_question'],
-                    a=entry['new_answer'],
-                    passages=[p['passage'] for p in entry['fake_contexts']]
-                )
-                
-                buffer.append(short_entry)
-                
-                if len(buffer) >= BUFFER_SIZE:
+            print(f"Processed index {idx}. Total input tokens: {total_input_tokens}, Total output tokens: {total_output_tokens}, Estimated cost so far: ${current_cost:.6f}")
+            
+            entry = json.loads(response.text)
+            
+            # convert to ShortEntry
+            short_entry = ShortEntry(
+                q=entry['new_question'],
+                a=entry['new_answer'],
+                passages=[p['passage'] for p in entry['fake_contexts']]
+            )
+            
+            buffer.append(short_entry)
+            
+            # convert to FullEntry for long term storage
+            full_entry = FullEntry(
+                q=entry['new_question'],
+                a=entry['new_answer'],
+                short_a=entry['new_short_answer'],
+                passages=[FicticiousPassage(**p) for p in entry['fake_contexts']]
+            )
+            long_buffer.append(full_entry)
+            
+            if len(buffer) >= BUFFER_SIZE:
+                with open(output_file, "a") as f_out:
                     for buffered_entry in buffer:
                         f_out.write(buffered_entry.model_dump_json() + "\n")
-                    f_out.flush()
-                    buffer = []
-            except KeyboardInterrupt as e:
-                print("Generation interrupted by user.")
-                break
-            except Exception as e:
-                print(f"Error generating entry for index {idx}: {e}")
-                continue
-        
-        # Write any remaining entries in the buffer
+                    f_out.flush()   
+                buffer = []
+                
+            if len(long_buffer) >= BUFFER_SIZE:
+                with open(output_file_long, "a") as f_out_long:
+                    for buffered_entry in long_buffer:
+                        f_out_long.write(buffered_entry.model_dump_json() + "\n")
+                    f_out_long.flush()   
+                long_buffer = []
+        except KeyboardInterrupt as e:
+            print("Generation interrupted by user.")
+            break
+        except Exception as e:
+            print(f"Error generating entry for index {idx}: {e}")
+            continue
+    
+    # Write any remaining entries in the buffer
+    with open(output_file, "a") as f_out:
         for buffered_entry in buffer:
             f_out.write(buffered_entry.model_dump_json() + "\n")
         f_out.flush()
-        buffer = []
+    buffer = []
+    
+    with open(output_file_long, "a") as f_out_long:
+        for buffered_entry in long_buffer:
+            f_out_long.write(buffered_entry.model_dump_json() + "\n")
+        f_out_long.flush()
+    long_buffer = []
+    
 except Exception as e:
     print(f"An error occurred: {e}")
 finally:
@@ -265,3 +304,10 @@ finally:
             for buffered_entry in buffer:
                 f_out.write(buffered_entry.model_dump_json() + "\n")
             f_out.flush()
+    buffer = []
+    if long_buffer:
+        with open(output_file_long, "a") as f_out_long:
+            for buffered_entry in long_buffer:
+                f_out_long.write(buffered_entry.model_dump_json() + "\n")
+            f_out_long.flush()
+    long_buffer = []
