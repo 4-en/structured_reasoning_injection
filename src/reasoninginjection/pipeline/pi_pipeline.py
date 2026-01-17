@@ -45,6 +45,10 @@ class PIPipeline(Pipeline):
         return response_message
     
     def __str__(self) -> str:
+        
+        if not self.enable_noise:
+            return "PI_NoNoise"
+        
         return "PassageInjectionPipeline"
     
     def get_description(self) -> str:

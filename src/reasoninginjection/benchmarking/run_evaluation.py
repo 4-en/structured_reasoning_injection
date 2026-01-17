@@ -145,21 +145,21 @@ class Evaluator:
             end_index = start_index + num_cases
         
         metrics = {
-                #"correctness": GEval(
-                #    name="Correctness",
-                #    model=self.eval_model,
-                #    evaluation_params=[
-                #        LLMTestCaseParams.INPUT,
-                #        LLMTestCaseParams.ACTUAL_OUTPUT,
-                #        LLMTestCaseParams.EXPECTED_OUTPUT],
-                #    evaluation_steps=[
-                #        "Check whether the facts in 'actual output' contradict any facts in 'expected output'",
-                #        "Lightly penalize omissions of detail, focusing on the main idea",
-                #        "Don't penalize for missing details from the 'expected output' that where not directly asked for or not crucial context for the answer",
-                #    ],
-                #),
+                "correctness": GEval(
+                   name="Correctness",
+                   model=self.eval_model,
+                   evaluation_params=[
+                       LLMTestCaseParams.INPUT,
+                       LLMTestCaseParams.ACTUAL_OUTPUT,
+                       LLMTestCaseParams.EXPECTED_OUTPUT],
+                   evaluation_steps=[
+                       "Check whether the facts in 'actual output' contradict any facts in 'expected output'",
+                       "Lightly penalize omissions of detail, focusing on the main idea",
+                       "Don't penalize for missing details from the 'expected output' that where not directly asked for or not crucial context for the answer",
+                   ],
+                ),
                 #"answer_relevancy": AnswerRelevancyMetric(threshold=0.5, model=self.eval_model, async_mode=False),
-                "faithfulness": FaithfulnessMetric(threshold=0.5, model=self.eval_model, async_mode=False),
+                #"faithfulness": FaithfulnessMetric(threshold=0.5, model=self.eval_model, async_mode=False),
                 #"hallucination": HallucinationMetric(threshold=0.5, model=self.eval_model, async_mode=False)
             }
         

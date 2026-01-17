@@ -118,18 +118,20 @@ def main(args:list[str]=None):
     dataset_file = "datasets/ficticious_nq_dataset_dev.jsonl"
     max_entries = 100  # Set to None to process all entries
     
-    def get_pi_no_noise_pipeline(generator):
-        pipeline = PIPipeline(generator=generator)
-        pipeline.enable_noise = False
-        pipeline.__str__ = lambda: "PI_NoNoise"
-        return pipeline
+    class PINoNoisePipeline(PIPipeline):
+        def __init__(self, generator: LowLevelLlamaCppGenerator):
+            super().__init__(generator)
+            self.enable_noise = False
+            
+        def __str__(self) -> str:
+            return "PI_NoNoise"
     
     pipeline_map = {
         "baseline": BaselinePipeline,
         "expert": ExpertPipeline,
         "se": SEPipeline,
         "pi": PIPipeline,
-        "pi_no_noise": get_pi_no_noise_pipeline,
+        "pi_no_noise": PINoNoisePipeline,
         "sri": SRIPipeline
     }
     
