@@ -58,7 +58,8 @@ The framework relies on a modular design:
 
 ## Current Status
 
-Research is ongoing. Initial testing indicates that while SRI provides a highly structured internal state, performance parity with standard Passage Injection is the current benchmark. Efforts are focused on:
+Research is ongoing. Initial testing indicates that while SRI provides a highly structured internal state, performance parity with standard Passage Injection is the current benchmark. Most improtantly, SRI can lead to loss of information due to additional processing step (Passages -> Structured Monologue -> Final Response).
+Efforts are focused on:
 
 * Refining the self-correction logic (Step 4).
 * Optimizing the "Inner Monologue" prompt to reduce verbosity while maintaining fact density.
